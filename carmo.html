@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>カーモ記録</title>
+<style>
+body {
+  font-family: system-ui, sans-serif;
+  background: #f5f7f6;
+  margin: 0;
+  padding: 10px;
+}
+
+h1 {
+  text-align: center;
+}
+
+.container {
+  max-width: 600px;
+  margin: auto;
+}
+
+input, textarea, button {
+  width: 100%;
+  padding: 10px;
+  margin: 6px 0;
+  font-size: 16px;
+}
+
+button {
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+}
+
+.record {
+  background: white;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.record small {
+  color: #555;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1>🦆 カーモ記録</h1>
+
+  <input id="bird" placeholder="カーモの名前（例：カルガモ）">
+  <input id="place" placeholder="場所（例：あづま運動公園）">
+  <textarea id="memo" placeholder="メモ"></textarea>
+  <button onclick="saveRecord()">保存する</button>
+
+  <h2>📋 記録一覧</h2>
+  <div id="list"></div>
+</div>
+
+<script>
+const STORAGE_KEY = "carmoRecords";
+
+function loadRecords() {
+  const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  data.reverse().forEach(r => {
+    const div = document.createElement("div");
+    div.className = "record";
+    div.innerHTML = `
+      <strong>🦆 ${r.bird}</strong><br>
+      📍 ${r.place}<br>
+      <small>${r.date}</small><br>
+      📝 ${r.memo || ""}
+    `;
+    list.appendChild(div);
+  });
+}
+
+function saveRecord() {
+  const bird = document.getElementById("bird").value.trim();
+  const place = document.getElementById("place").value.trim();
+  const memo = document.getElementById("memo").value.trim();
+
+  if (!bird || !place) {
+    alert("カーモ名と場所は必須だガ！");
+    return;
+  }
+
+  const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  data.push({
+    bird,
+    place,
+    memo,
+    date: new Date().toLocaleString()
+  });
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  document.getElementById("bird").value = "";
+  document.getElementById("place").value = "";
+  document.getElementById("memo").value = "";
+
+  loadRecords();
+}
+
+loadRecords();
+</script>
+</body>
+</html>
