@@ -1,115 +1,42 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>カーモ記録</title>
-<style>
-body {
-  font-family: system-ui, sans-serif;
-  background: #f5f7f6;
-  margin: 0;
-  padding: 10px;
-}
-
-h1 {
-  text-align: center;
-}
-
-.container {
-  max-width: 600px;
-  margin: auto;
-}
-
-input, textarea, button {
-  width: 100%;
-  padding: 10px;
-  margin: 6px 0;
-  font-size: 16px;
-}
-
-button {
-  background: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 6px;
-}
-
-.record {
-  background: white;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-.record small {
-  color: #555;
-}
-</style>
+  <meta charset="UTF-8">
+  <title>カモ記録帳</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-<div class="container">
-  <h1>🦆 カーモ記録</h1>
 
-  <input id="bird" placeholder="カーモの名前（例：カルガモ）">
-  <input id="place" placeholder="場所（例：あづま運動公園）">
-  <textarea id="memo" placeholder="メモ"></textarea>
-  <button onclick="saveRecord()">保存する</button>
+  <h1>🦆 カーモ記録帳</h1>
 
-  <h2>📋 記録一覧</h2>
-  <div id="list"></div>
-</div>
+<form id="recordForm">
+  <div>
+    <label>日付：</label><br>
+    <input type="date" id="date">
+  </div>
 
-<script>
-const STORAGE_KEY = "carmoRecords";
+  <div>
+    <label>場所：</label><br>
+    <input type="text" id="place">
+  </div>
 
-function loadRecords() {
-  const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  const list = document.getElementById("list");
-  list.innerHTML = "";
+  <div>
+    <label>カーモ：</label><br>
+    <input type="text" id="kamo">
+  </div>
 
-  data.reverse().forEach(r => {
-    const div = document.createElement("div");
-    div.className = "record";
-    div.innerHTML = `
-      <strong>🦆 ${r.bird}</strong><br>
-      📍 ${r.place}<br>
-      <small>${r.date}</small><br>
-      📝 ${r.memo || ""}
-    `;
-    list.appendChild(div);
-  });
-}
+  <div>
+    <label>メモ：</label><br>
+    <textarea id="memo"></textarea>
+  </div>
 
-function saveRecord() {
-  const bird = document.getElementById("bird").value.trim();
-  const place = document.getElementById("place").value.trim();
-  const memo = document.getElementById("memo").value.trim();
+  <div>
+    <label>写真：</label><br>
+    <input type="file" id="photoInput" accept="image/*">
+  </div>
 
-  if (!bird || !place) {
-    alert("カーモ名と場所は必須だガ！");
-    return;
-  }
+  <img id="photoPreview" style="max-width: 100%; margin-top: 10px; display: none;">
 
-  const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  data.push({
-    bird,
-    place,
-    memo,
-    date: new Date().toLocaleString()
-  });
+  <button type="submit">保存</button>
+</form>
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-
-  document.getElementById("bird").value = "";
-  document.getElementById("place").value = "";
-  document.getElementById("memo").value = "";
-
-  loadRecords();
-}
-
-loadRecords();
-</script>
-</body>
-</html>
