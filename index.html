@@ -37,13 +37,44 @@ initDB();
 
 
 function saveRecord(record) {
-  const tx = db.transaction("records", "readwrite");
-  const store = tx.objectStore("records");
-  store.put(record);
+alert("① saveRecord 開始");
 
-  tx.oncomplete = () => {
-    console.log("保存完了");
+  const fileInput = document.getElementById("photo");
+alert("② photo要素：" + fileInput);
+if (!fileInput) {
+    alert("❌ photo が見つからない");
+    return;
+  }
+
+  const file = fileInput.files[0];
+  alert("③ file：" + file);
+
+  const file = fileInput.files[0];
+
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function () {
+      addRecord(reader.result);
+    };
+    reader.readAsDataURL(file);
+  } else {
+    addRecord(null); // 
+  }
+}
+
+function addRecord(imageBase64) {
+alert("addRecord 入ったガ！");
+  const record = {
+    kamo: document.getElementById("kamo").value,
+    place: document.getElementById("place").value,
+    photo: imageBase64
   };
+
+  kamoRecords.push(record);
+  localStorage.setItem("kamolog", JSON.stringify(kamoRecords));
+
+  alert("保存完了ガー！"); // ← ここ
+  renderRecords();
 }
 
 
@@ -118,6 +149,6 @@ const record = {
 
   <img id="photoPreview" style="max-width: 100%; margin-top: 10px; display: none;">
 
-  <button type="submit">保存</button>
+  <button onclick="saveRecord()">保存</button>
 </form>
 
