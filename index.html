@@ -9,6 +9,87 @@
 
   <h1>🦆 カーモ記録帳</h1>
 
+<script>
+let db;
+
+function initDB() {
+  const request = indexedDB.open("kamologDB", 1);
+
+  request.onupgradeneeded = function (event) {
+    db = event.target.result;
+    if (!db.objectStoreNames.contains("records")) {
+      db.createObjectStore("records", { keyPath: "id" });
+    }
+  };
+
+  request.onsuccess = function (event) {
+    db = event.target.result;
+    console.log("DB ready");
+    loadRecords();
+  };
+
+  request.onerror = function () {
+    alert("データベースの初期化に失敗しました");
+  };
+}
+
+initDB();
+
+
+function saveRecord(record) {
+  const tx = db.transaction("records", "readwrite");
+  const store = tx.objectStore("records");
+  store.put(record);
+
+  tx.oncomplete = () => {
+    console.log("保存完了");
+  };
+}
+
+
+function loadRecords() {
+  const tx = db.transaction("records", "readonly");
+  const store = tx.objectStore("records");
+  const request = store.getAll();
+
+  request.onsuccess = () => {
+    const records = request.result || [];
+    console.log("読み込み:", records);
+    renderList(records);
+  };
+}
+
+
+function renderList(records) {
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  records.forEach(r => {
+    const div = document.createElement("div");
+    div.innerHTML = `
+      <b>${r.kamo}</b> / ${r.place}<br>
+      <img src="${r.photo}" width="120"><hr>
+    `;
+    list.appendChild(div);
+  });
+}
+
+
+const record = {
+  id: Date.now(),
+  kamo: "カルガモ",
+  place: "あづま運動公園",
+  date: "2026-01-24",
+  memo: "まいさんと一緒",
+  photo: imageBase64
+};
+
+
+
+</script>
+
+
+
 <form id="recordForm">
   <div>
     <label>日付：</label><br>
