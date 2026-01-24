@@ -2,153 +2,116 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>カモ記録帳</title>
-  <link rel="stylesheet" href="style.css">
+  <title>kamolog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 10px;
+    }
+    input, button {
+      display: block;
+      margin: 8px 0;
+      font-size: 16px;
+    }
+    img {
+      max-width: 100%;
+      margin-top: 5px;
+    }
+    .record {
+      border-bottom: 1px solid #ccc;
+      padding: 8px 0;
+    }
+  </style>
 </head>
+
 <body>
 
-  <h1>🦆 カーモ記録帳</h1>
+  <h1>🦆 カモログ</h1>
 
-<script>
-let db;
-
-function initDB() {
-  const request = indexedDB.open("kamologDB", 1);
-
-  request.onupgradeneeded = function (event) {
-    db = event.target.result;
-    if (!db.objectStoreNames.contains("records")) {
-      db.createObjectStore("records", { keyPath: "id" });
-    }
-  };
-
-  request.onsuccess = function (event) {
-    db = event.target.result;
-    console.log("DB ready");
-    loadRecords();
-  };
-
-  request.onerror = function () {
-    alert("データベースの初期化に失敗しました");
-  };
-}
-
-initDB();
-
-
-function saveRecord(record) {
-alert("① saveRecord 開始");
-
-  const fileInput = document.getElementById("photo");
-alert("② photo要素：" + fileInput);
-if (!fileInput) {
-    alert("❌ photo が見つからない");
-    return;
-  }
-
-  const file = fileInput.files[0];
-  alert("③ file：" + file);
-
-  const file = fileInput.files[0];
-
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = function () {
-      addRecord(reader.result);
-    };
-    reader.readAsDataURL(file);
-  } else {
-    addRecord(null); // 
-  }
-}
-
-function addRecord(imageBase64) {
-alert("addRecord 入ったガ！");
-  const record = {
-    kamo: document.getElementById("kamo").value,
-    place: document.getElementById("place").value,
-    photo: imageBase64
-  };
-
-  kamoRecords.push(record);
-  localStorage.setItem("kamolog", JSON.stringify(kamoRecords));
-
-  alert("保存完了ガー！"); // ← ここ
-  renderRecords();
-}
-
-
-function loadRecords() {
-  const tx = db.transaction("records", "readonly");
-  const store = tx.objectStore("records");
-  const request = store.getAll();
-
-  request.onsuccess = () => {
-    const records = request.result || [];
-    console.log("読み込み:", records);
-    renderList(records);
-  };
-}
-
-
-function renderList(records) {
-  const list = document.getElementById("list");
-  list.innerHTML = "";
-
-  records.forEach(r => {
-    const div = document.createElement("div");
-    div.innerHTML = `
-      <b>${r.kamo}</b> / ${r.place}<br>
-      <img src="${r.photo}" width="120"><hr>
-    `;
-    list.appendChild(div);
-  });
-}
-
-
-const record = {
-  id: Date.now(),
-  kamo: "カルガモ",
-  place: "あづま運動公園",
-  date: "2026-01-24",
-  memo: "まいさんと一緒",
-  photo: imageBase64
-};
-
-
-
-</script>
-
-
-
-<form id="recordForm">
-  <div>
-    <label>日付：</label><br>
-    <input type="date" id="date">
-  </div>
-
-  <div>
-    <label>場所：</label><br>
-    <input type="text" id="place">
-  </div>
-
-  <div>
-    <label>カーモ：</label><br>
-    <input type="text" id="kamo">
-  </div>
-
-  <div>
-    <label>メモ：</label><br>
-    <textarea id="memo"></textarea>
-  </div>
-
-  <div>
-    <label>写真：</label><br>
-    <input type="file" id="photoInput" accept="image/*">
-  </div>
-
-  <img id="photoPreview" style="max-width: 100%; margin-top: 10px; display: none;">
-
+  <!-- 入力フォーム -->
+  <input type="text" id="kamo" placeholder="カーモの名前（例：カルガーモ）">
+  <input type="text" id="place" placeholder="場所（例：あづま運動公園）">
+  <input type="file" id="photo" accept="image/*">
   <button onclick="saveRecord()">保存</button>
-</form>
 
+  <hr>
+
+  <!-- 表示エリア -->
+  <div id="recordList"></div>
+
+  <!-- ★ JavaScriptはここだけ ★ -->
+  <script>
+    // データ置き場
+    let kamoRecords = [];
+
+    // ページ読み込み時に保存データを読む
+    loadRecords();
+
+    function saveRecord() {
+      alert("保存ボタン押されたガ！");
+
+      const kamo = document.getElementById("kamo").value;
+      const place = document.getElementById("place").value;
+      const fileInput = document.getElementById("photo");
+      const file = fileInput.files[0];
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function () {
+          addRecord(kamo, place, reader.result);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        addRecord(kamo, place, null);
+      }
+    }
+
+    function addRecord(kamo, place, imageBase64) {
+      alert("保存完了ガー！");
+
+      const record = {
+        kamo: kamo,
+        place: place,
+        photo: imageBase64
+      };
+
+      kamoRecords.push(record);
+      localStorage.setItem("kamolog", JSON.stringify(kamoRecords));
+
+      renderRecords();
+      clearForm();
+    }
+
+    function renderRecords() {
+      const list = document.getElementById("recordList");
+      list.innerHTML = "";
+
+      kamoRecords.forEach(r => {
+        const div = document.createElement("div");
+        div.className = "record";
+        div.innerHTML = `
+          <p>🦆 ${r.kamo} / 📍 ${r.place}</p>
+          ${r.photo ? `<img src="${r.photo}">` : ""}
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function loadRecords() {
+      const saved = localStorage.getItem("kamolog");
+      if (saved) {
+        kamoRecords = JSON.parse(saved);
+        renderRecords();
+      }
+    }
+
+    function clearForm() {
+      document.getElementById("kamo").value = "";
+      document.getElementById("place").value = "";
+      document.getElementById("photo").value = "";
+    }
+  </script>
+
+</body>
+</html>
