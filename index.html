@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>kamolog</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
     body {
       font-family: sans-serif;
@@ -13,105 +14,218 @@
       display: block;
       margin: 8px 0;
       font-size: 16px;
+      width: 100%;
+      max-width: 420px;
+    }
+    button {
+      padding: 10px;
+      cursor: pointer;
     }
     img {
       max-width: 100%;
       margin-top: 5px;
+      border-radius: 10px;
     }
     .record {
       border-bottom: 1px solid #ccc;
-      padding: 8px 0;
+      padding: 10px 0;
+    }
+    .small {
+      font-size: 12px;
+      opacity: 0.7;
     }
   </style>
-</head>
 
-<body>
+  <!-- Firebase + Firestore -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      getDocs,
+      query,
+      orderBy,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-firestore.js";
 
-  <h1>🦆 カモログ</h1>
+    // Firebase設定（マサユキのプロジェクト）
+    const firebaseConfig = {
+      apiKey: "AIzaSyC_Qi-AMJBo0ZY0dYn2KOLPALdkuq4zjJ4",
+      authDomain: "kamolog-537fd.firebaseapp.com",
+      projectId: "kamolog-537fd",
+      storageBucket: "kamolog-537fd.firebasestorage.app",
+      messagingSenderId: "855371003036",
+      appId: "1:855371003036:web:3364d4727964e3bccf2959"
+    };
 
-  <!-- 入力フォーム -->
-  <input type="text" id="kamo" placeholder="カーモの名前（例：カルガーモ）">
-  <input type="text" id="place" placeholder="場所（例：あづま運動公園）">
-  <input type="file" id="photo" accept="image/*">
-  <button onclick="saveRecord()">保存</button>
+    // 初期化
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-  <hr>
+    // Firestoreの保存先（コレクション名）
+    const kamoCol = collection(db, "kamologRecords");
 
-  <!-- 表示エリア -->
-  <div id="recordList"></div>
+    // HTML側から呼べるように window に関数を登録
+    window.saveRecord = saveRecord;
+    window.loadRecords = loadRecords;
 
-  <!-- ★ JavaScriptはここだけ ★ -->
-  <script>
-    // データ置き場
-    let kamoRecords = [];
+    // ページ読み込み時
+    window.addEventListener("DOMContentLoaded", () => {
+      loadRecords();
+    });
 
-    // ページ読み込み時に保存データを読む
-    loadRecords();
-
-    function saveRecord() {
-      alert("保存ボタン押されたガ！");
-
-      const kamo = document.getElementById("kamo").value;
-      const place = document.getElementById("place").value;
-      const fileInput = document.getElementById("photo");
-      const file = fileInput.files[0];
-
-      if (file) {
+    // =========================
+    // 画像圧縮（スマホ対策）
+    // =========================
+    async function compressImageToBase64(file, maxWidth = 900, quality = 0.7) {
+      return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = function () {
-          addRecord(kamo, place, reader.result);
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            const ratio = img.width / img.height;
+            const width = Math.min(maxWidth, img.width);
+            const height = Math.round(width / ratio);
+
+            const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, width, height);
+
+            const base64 = canvas.toDataURL("image/jpeg", quality);
+            resolve(base64);
+          };
+          img.onerror = reject;
+          img.src = reader.result;
         };
+        reader.onerror = reject;
         reader.readAsDataURL(file);
-      } else {
-        addRecord(kamo, place, null);
-      }
-    }
-
-    function addRecord(kamo, place, imageBase64) {
-      alert("保存完了ガー！");
-
-      const record = {
-        kamo: kamo,
-        place: place,
-        photo: imageBase64
-      };
-
-      kamoRecords.push(record);
-      localStorage.setItem("kamolog", JSON.stringify(kamoRecords));
-
-      renderRecords();
-      clearForm();
-    }
-
-    function renderRecords() {
-      const list = document.getElementById("recordList");
-      list.innerHTML = "";
-
-      kamoRecords.forEach(r => {
-        const div = document.createElement("div");
-        div.className = "record";
-        div.innerHTML = `
-          <p>🦆 ${r.kamo} / 📍 ${r.place}</p>
-          ${r.photo ? `<img src="${r.photo}">` : ""}
-        `;
-        list.appendChild(div);
       });
     }
 
-    function loadRecords() {
-      const saved = localStorage.getItem("kamolog");
-      if (saved) {
-        kamoRecords = JSON.parse(saved);
-        renderRecords();
+    // =========================
+    // 保存（Firestoreへ）
+    // =========================
+    async function saveRecord() {
+      const kamo = document.getElementById("kamo").value.trim();
+      const place = document.getElementById("place").value.trim();
+      const fileInput = document.getElementById("photo");
+      const file = fileInput.files[0];
+
+      if (!kamo || !place) {
+        alert("カーモの名前と場所は必須だよ！");
+        return;
+      }
+
+      // 保存中表示
+      const btn = document.getElementById("saveBtn");
+      btn.disabled = true;
+      btn.textContent = "保存中…";
+
+      try {
+        let photoBase64 = null;
+
+        if (file) {
+          // Firestoreに重い画像は危険なので圧縮
+          photoBase64 = await compressImageToBase64(file, 900, 0.7);
+        }
+
+        // Firestoreに保存
+        await addDoc(kamoCol, {
+          kamo,
+          place,
+          photo: photoBase64,
+          createdAt: serverTimestamp()
+        });
+
+        // フォームクリア
+        clearForm();
+
+        // 再読み込み（最新反映）
+        await loadRecords();
+
+        alert("保存したガー！🦆✨");
+      } catch (e) {
+        console.error(e);
+        alert("保存に失敗したガ…（コンソール見て）");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "保存";
       }
     }
 
+    // =========================
+    // 読み込み（Firestoreから）
+    // =========================
+    async function loadRecords() {
+      const list = document.getElementById("recordList");
+      list.innerHTML = "読み込み中…";
+
+      try {
+        // createdAt順に並べる
+        const q = query(kamoCol, orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+
+        list.innerHTML = "";
+
+        snapshot.forEach(doc => {
+          const r = doc.data();
+
+          const div = document.createElement("div");
+          div.className = "record";
+          div.innerHTML = `
+            <p>🦆 ${escapeHtml(r.kamo)} / 📍 ${escapeHtml(r.place)}</p>
+            ${r.photo ? `<img src="${r.photo}" alt="photo">` : ""}
+            <p class="small">id: ${doc.id}</p>
+          `;
+          list.appendChild(div);
+        });
+
+        if (snapshot.size === 0) {
+          list.innerHTML = "<p>まだ記録がないよ！</p>";
+        }
+      } catch (e) {
+        console.error(e);
+        list.innerHTML = "<p>読み込み失敗…（コンソール見て）</p>";
+      }
+    }
+
+    // =========================
+    // 小物
+    // =========================
     function clearForm() {
       document.getElementById("kamo").value = "";
       document.getElementById("place").value = "";
       document.getElementById("photo").value = "";
     }
-  </script>
 
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+  </script>
+</head>
+
+<body>
+  <h1>🦆 カモログ</h1>
+
+  <!-- 入力フォーム -->
+  <input type="text" id="kamo" placeholder="カーモの名前（例：カルガーモ）" />
+  <input type="text" id="place" placeholder="場所（例：あづま運動公園）" />
+  <input type="file" id="photo" accept="image/*" />
+
+  <button id="saveBtn" onclick="saveRecord()">保存</button>
+
+  <hr />
+
+  <!-- 表示エリア -->
+  <div id="recordList"></div>
 </body>
 </html>
