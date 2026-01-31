@@ -1,0 +1,118 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>kamolog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 10px;
+    }
+    input, button {
+      display: block;
+      margin: 8px 0;
+      font-size: 16px;
+    }
+    img {
+      max-width: 100%;
+      margin-top: 5px;
+    }
+    .record {
+      border-bottom: 1px solid #ccc;
+      padding: 8px 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>🦆 カモログ</h1>
+
+  <!-- 入力フォーム -->
+  <input type="text" id="kamo" placeholder="カーモの名前（例：カルガーモ）">
+  <input type="text" id="place" placeholder="場所（例：あづま運動公園）">
+  <input type="file" id="photo" accept="image/*">
+  <button onclick="saveRecord()">保存</button>
+
+  <hr>
+
+  <!-- 表示エリア -->
+  <div id="recordList"></div>
+
+  <!-- ★ JavaScriptはここだけ ★ -->
+  <script>
+    // データ置き場
+    let kamoRecords = [];
+
+    // ページ読み込み時に保存データを読む
+    loadRecords();
+
+    function saveRecord() {
+      alert("保存ボタン押されたガ！");
+
+      const kamo = document.getElementById("kamo").value;
+      const place = document.getElementById("place").value;
+      const fileInput = document.getElementById("photo");
+      const file = fileInput.files[0];
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function () {
+          addRecord(kamo, place, reader.result);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        addRecord(kamo, place, null);
+      }
+    }
+
+    function addRecord(kamo, place, imageBase64) {
+      alert("保存完了ガー！");
+
+      const record = {
+        kamo: kamo,
+        place: place,
+        photo: imageBase64
+      };
+
+      kamoRecords.push(record);
+      localStorage.setItem("kamolog", JSON.stringify(kamoRecords));
+
+      renderRecords();
+      clearForm();
+    }
+
+    function renderRecords() {
+      const list = document.getElementById("recordList");
+      list.innerHTML = "";
+
+      kamoRecords.forEach(r => {
+        const div = document.createElement("div");
+        div.className = "record";
+        div.innerHTML = `
+          <p>🦆 ${r.kamo} / 📍 ${r.place}</p>
+          ${r.photo ? `<img src="${r.photo}">` : ""}
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function loadRecords() {
+      const saved = localStorage.getItem("kamolog");
+      if (saved) {
+        kamoRecords = JSON.parse(saved);
+        renderRecords();
+      }
+    }
+
+    function clearForm() {
+      document.getElementById("kamo").value = "";
+      document.getElementById("place").value = "";
+      document.getElementById("photo").value = "";
+    }
+  </script>
+
+</body>
+</html>
