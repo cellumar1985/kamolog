@@ -78,15 +78,15 @@
         return;
       }
 
-      if (file) {
+  if (file) {
   compressImage(file, function(base64) {
     saveToFirestore(kamo, place, base64);
   });
+} else {
+  // 新しい画像が選ばれてなければ、元の画像を保持
+  saveToFirestore(kamo, place, currentPhoto);
 }
 
- else {
-        saveToFirestore(kamo, place, null);
-      }
     }
 
     function saveToFirestore(kamo, place, photo) {
@@ -128,12 +128,13 @@
       }
     }
 
-    function editRecord(id, kamo, place) {
-      kamoInput.value = kamo;
-      placeInput.value = place;
-      editId = id;
-      alert("編集モードだよ🦆\n直して保存してね！");
-    }
+   function editRecord(id, kamo, place, photo) {
+  kamoInput.value = kamo;
+  placeInput.value = place;
+  currentPhoto = photo || null;
+  editId = id;
+  alert("編集モードだよ🦆\n文字だけ直しても写真は残るよ！");
+}
 
     function clearForm() {
       kamoInput.value = "";
