@@ -29,6 +29,23 @@
     }
   </style>
 
+
+</head>
+
+<body>
+
+  <h1>🦆 カモログ</h1>
+
+  <input type="text" id="kamo" placeholder="カーモの名前（例：カルガーモ）">
+  <input type="text" id="place" placeholder="場所（例：あづま運動公園）">
+  <input type="file" id="photo" accept="image/*">
+
+  <button onclick="saveRecord()">保存</button>
+
+  <hr>
+
+  <div id="recordList"></div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
     import {
@@ -127,21 +144,6 @@
       photoInput.value = "";
     }
   </script>
-</head>
-
-<body>
-
-  <h1>🦆 カモログ</h1>
-
-  <input type="text" id="kamo" placeholder="カーモの名前（例：カルガーモ）">
-  <input type="text" id="place" placeholder="場所（例：あづま運動公園）">
-  <input type="file" id="photo" accept="image/*">
-
-  <button onclick="saveRecord()">保存</button>
-
-  <hr>
-
-  <div id="recordList"></div>
 
 </body>
 </html>
