@@ -10,42 +10,40 @@
       font-family: sans-serif;
       padding: 10px;
 
+      background-image: url("river_bg.png");
+      background-repeat: repeat-y;
+      background-size: cover;
+      animation: riverFlow 40s linear infinite;
+    }
 
- background-image: url("river_bg.png");
-  background-repeat: repeat-y;
-  background-size: cover;
-  animation: riverFlow 40s linear infinite;
-}
-
-@keyframes riverFlow {
-  from { background-position: 0 0; }
-  to   { background-position: 0 2000px; }
-}
-
-
-
+    @keyframes riverFlow {
+      from { background-position: 0 0; }
+      to   { background-position: 0 2000px; }
+    }
 
     input, button {
       display: block;
       margin: 8px 0;
       font-size: 16px;
     }
+
     img {
       max-width: 100%;
       margin-top: 5px;
     }
+
     .record {
       border-bottom: 1px solid #ccc;
       padding: 8px 0;
     }
+
     .btns {
       display: flex;
       gap: 10px;
     }
-
-
   </style>
 </head>
+
 <body>
 
 
