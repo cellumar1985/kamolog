@@ -9,7 +9,22 @@
     body {
       font-family: sans-serif;
       padding: 10px;
-    }
+
+
+ background-image: url("river_bg.png");
+  background-repeat: repeat-y;
+  background-size: cover;
+  animation: riverFlow 40s linear infinite;
+}
+
+@keyframes riverFlow {
+  from { background-position: 0 0; }
+  to   { background-position: 0 2000px; }
+}
+
+
+
+
     input, button {
       display: block;
       margin: 8px 0;
