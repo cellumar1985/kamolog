@@ -15,6 +15,8 @@ html, body {
 }
 
  body {
+position: relative;
+  z-index: 10;
       font-family: sans-serif;
       padding: 10px;
 
@@ -53,18 +55,26 @@ html, body {
 
 #duck {
   position: fixed;
-  top: -100px;
+  top: -120px;
   left: 50%;
   width: 80px;
   transform: translateX(-50%);
-  pointer-events: auto;
+  pointer-events: none;
+  z-index: 1;
   animation: flow 12s linear infinite;
 }
 
 @keyframes flow {
-  0%   { top: -100px; }
+  0%   { top: -120px; }
   100% { top: 110vh; }
 }
+
+pointer-events: none;
+  z-index: 1;
+  animation: flow 12s linear infinite;
+}
+
+
   </style>
 </head>
 
