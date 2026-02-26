@@ -12,6 +12,7 @@ html, body {
   padding: 0;
   width: 100%;
   height: 100%;
+<img src="duck.png" id="duck">
 }
 
  body {
@@ -49,6 +50,22 @@ html, body {
       display: flex;
       gap: 10px;
     }
+
+
+#duck {
+  position: fixed;
+  top: -100px;
+  left: 50%;
+  width: 80px;
+  transform: translateX(-50%);
+  pointer-events: auto;
+  animation: flow 12s linear infinite;
+}
+
+@keyframes flow {
+  0%   { top: -100px; }
+  100% { top: 110vh; }
+}
   </style>
 </head>
 
