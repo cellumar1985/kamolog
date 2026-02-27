@@ -58,6 +58,7 @@ position: relative;
   top: -120px;
   left: 50%;
   width: 80px;
+  max-width: none;
   transform: translateX(-50%);
  pointer-events: none;
   z-index: 1;
@@ -79,12 +80,11 @@ pointer-events: none;
   animation: flow 12s linear infinite;
 }
 
-@media (min-width: 768px) {
+@media screen and (min-width: 1024px) {
   #duck {
-    width: 140px;
+    width: 160px !important;
   }
 }
-
   </style>
 </head>
 
