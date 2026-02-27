@@ -59,11 +59,16 @@ position: relative;
   left: 50%;
   width: 80px;
   transform: translateX(-50%);
-  pointer-events: none;
+ pointer-events: none;
   z-index: 1;
   animation: flow 12s linear infinite;
 }
 
+#app {
+  position: relative;
+  z-index: 10;
+}
+ 
 @keyframes flow {
   0%   { top: -120px; }
   100% { top: 110vh; }
@@ -74,6 +79,11 @@ pointer-events: none;
   animation: flow 12s linear infinite;
 }
 
+@media (min-width: 768px) {
+  #duck {
+    width: 140px;
+  }
+}
 
   </style>
 </head>
@@ -81,6 +91,8 @@ pointer-events: none;
 <body>
 
 <img src="duck.png" id="duck">
+
+<div id="app">
 
   <h1>🦆 カモログ</h1>
 
@@ -92,6 +104,8 @@ pointer-events: none;
   <hr>
 
   <div id="recordList"></div>
+
+</div>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
