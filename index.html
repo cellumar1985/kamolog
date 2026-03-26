@@ -129,7 +129,7 @@ h1{
   <hr>
 
 <select id="filterKamo" onchange="applyFilter()">
-  <option value="">全部のカモ</option>
+  <option value="">全部のカーモ</option>
 </select>
 
 <select id="sortOrder" onchange="applyFilter()">
@@ -238,7 +238,7 @@ const date = document.getElementById("date").value;
 function updateFilterOptions(){
 
   const select = document.getElementById("filterKamo");
-  select.innerHTML = `<option value="">全部のカモ</option>`;
+  select.innerHTML = `<option value="">全部のカーモ</option>`;
 
   const set = new Set();
 
@@ -296,6 +296,13 @@ function render(data){
     list.appendChild(div);
   });
 }
+
+ function deleteRecord(id) {
+      if (confirm("このカーモ記録を削除する？🗑️")) {
+        db.collection("kamolog").doc(id).delete();
+      }
+    }
+
 
   function editRecord(id){
 
