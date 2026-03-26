@@ -322,11 +322,15 @@ function render(data){
 }
 
     function clearForm() {
-      kamoInput.value = "";
-      placeInput.value = "";
-      document.getElementById("memo").value = "";
-      photoInput.value = "";
-    }
+  document.getElementById("kamo").value = "";
+  document.getElementById("place").value = "";
+  document.getElementById("memo").value = "";
+  document.getElementById("date").value = "";
+  document.getElementById("photo").value = "";
+
+  currentPhoto = null;
+  editId = null;
+}
 
    function compressImage(file, callback){
   const reader = new FileReader();
