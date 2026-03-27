@@ -52,6 +52,18 @@ position: relative;
       gap: 10px;
     }
 
+label {
+  font-weight: bold;
+  margin-top: 10px;
+  display: block;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
 
 #duck2 {
   position: fixed;
@@ -119,11 +131,23 @@ h1{
 
  
 
-  <input type="text" id="kamo" placeholder="カーモの名前（例：カルガモ）">
-  <input type="date" id="date">
-  <input type="text" id="place" placeholder="場所（例：あづま運動公園）">
-  <textarea id="memo" placeholder="カモメモ"></textarea>
-  <input type="file" id="photo" accept="image/*">
+  <label>🦆 カーモの種類</label>
+<input type="text" id="kamo">
+
+<label>📅 日付</label>
+<input type="date" id="date">
+
+<label>📍 場所</label>
+<input type="text" id="place">
+
+<label>📝 カモメモ</label>
+<textarea id="memo"></textarea>
+
+<label>📷 写真</label>
+<input type="file" id="photo" accept="image/*" onchange="previewImage()">
+
+<img id="preview" style="max-width:100%; display:none; margin-top:10px;">
+
   <button onclick="saveRecord()">保存</button>
 
   <hr>
@@ -321,12 +345,16 @@ function render(data){
     alert("編集モードだよ🦆");
 }
 
-    function clearForm() {
+  function clearForm() {
   document.getElementById("kamo").value = "";
   document.getElementById("place").value = "";
   document.getElementById("memo").value = "";
   document.getElementById("date").value = "";
   document.getElementById("photo").value = "";
+
+  const preview = document.getElementById("preview");
+  preview.src = "";
+  preview.style.display = "none";
 
   currentPhoto = null;
   editId = null;
@@ -367,6 +395,24 @@ function render(data){
 
   reader.readAsDataURL(file);
 }
+
+function previewImage() {
+  const file = document.getElementById("photo").files[0];
+  const preview = document.getElementById("preview");
+
+  if (file) {
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+      preview.src = e.target.result;
+      preview.style.display = "block";
+    };
+
+    reader.readAsDataURL(file);
+  }
+}
+
+
   </script>
 
 </body>
