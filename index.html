@@ -153,6 +153,12 @@ h1{
   <option value="">全部のカーモ</option>
 </select>
 
+
+<select id="filterPlace" onchange="applyFilter()">
+  <option value="">全部の場所</option>
+</select>
+
+
 <select id="sortOrder" onchange="applyFilter()">
   <option value="desc">新しい順</option>
   <option value="asc">古い順</option>
@@ -256,34 +262,53 @@ const date = document.getElementById("date").value;
   applyFilter();
 });
 
+
 function updateFilterOptions(){
 
-  const select = document.getElementById("filterKamo");
-  select.innerHTML = `<option value="">全部のカーモ</option>`;
+  const kamoSelect = document.getElementById("filterKamo");
+  const placeSelect = document.getElementById("filterPlace");
 
-  const set = new Set();
+  kamoSelect.innerHTML = `<option value="">全部のカーモ</option>`;
+  placeSelect.innerHTML = `<option value="">全部の場所</option>`;
+
+  const kamoSet = new Set();
+  const placeSet = new Set();
 
   allData.forEach(d => {
-    if(d.kamo) set.add(d.kamo);
+    if(d.kamo) kamoSet.add(d.kamo);
+    if(d.place) placeSet.add(d.place);
   });
 
-  set.forEach(kamo => {
+  kamoSet.forEach(kamo => {
     const opt = document.createElement("option");
     opt.value = kamo;
     opt.textContent = kamo;
-    select.appendChild(opt);
+    kamoSelect.appendChild(opt);
+  });
+
+  placeSet.forEach(place => {
+    const opt = document.createElement("option");
+    opt.value = place;
+    opt.textContent = place;
+    placeSelect.appendChild(opt);
   });
 }
 
+
 function applyFilter(){
 
-  const filter = document.getElementById("filterKamo").value;
+  const kamoFilter = document.getElementById("filterKamo").value;
+  const placeFilter = document.getElementById("filterPlace").value;
   const sort = document.getElementById("sortOrder").value;
 
   let data = [...allData];
 
-  if(filter){
-    data = data.filter(d => d.kamo.includes(filter));
+  if(kamoFilter){
+    data = data.filter(d => d.kamo.includes(kamoFilter));
+  }
+
+  if(placeFilter){
+    data = data.filter(d => d.place.includes(placeFilter));
   }
 
   data.sort((a,b)=>{
@@ -294,6 +319,9 @@ function applyFilter(){
 
   render(data);
 }
+
+
+
 
 function render(data){
 
