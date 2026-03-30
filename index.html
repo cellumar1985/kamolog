@@ -68,11 +68,9 @@ input, textarea {
 #duck2 {
   position: fixed;
   top: -120px;
-  left: 50%;
   width: 100px;
   max-width: none;
-  transform: translateX(-50%);
- pointer-events: none;
+  pointer-events: none;
   z-index: 1;
   animation: flow 25s linear infinite;
 }
@@ -437,6 +435,31 @@ function previewImage() {
   }
 }
 
+function randomizeDuck() {
+  const duck = document.getElementById("duck2");
+window.onload = function(){
+  randomizeDuck();
+};
+
+
+  const min = 10;   // 左の余白
+  const max = 90;   // 右の余白
+
+  const randomX = Math.random() * (max - min) + min;
+
+  duck.style.left = randomX + "vw";
+}
+
+const duck = document.getElementById("duck2");
+
+duck.addEventListener("animationiteration", () => {
+  randomizeDuck();
+});
+
+
+window.onload = function(){
+  randomizeDuck();
+};
 
   </script>
 
