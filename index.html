@@ -75,6 +75,7 @@ input, textarea {
   animation: flow 25s linear infinite;
 }
 
+
 #app {
   position: relative;
   z-index: 10;
@@ -83,6 +84,13 @@ input, textarea {
 @keyframes flow {
   0%   { top: -120px; }
   100% { top: 110vh; }
+}
+
+
+@keyframes wobble {
+  0%   { margin-left: -5px; }
+  50%  { margin-left: 5px; }
+  100% { margin-left: -5px; }
 }
 
 
@@ -435,31 +443,59 @@ function previewImage() {
   }
 }
 
-function randomizeDuck() {
-  const duck = document.getElementById("duck2");
-window.onload = function(){
-  randomizeDuck();
-};
 
-
-  const min = 10;   // 左の余白
-  const max = 90;   // 右の余白
-
-  const randomX = Math.random() * (max - min) + min;
-
-  duck.style.left = randomX + "vw";
-}
 
 const duck = document.getElementById("duck2");
 
-duck.addEventListener("animationiteration", () => {
-  randomizeDuck();
-});
+function startFlow() {
 
+  // ランダム位置
+  const left = Math.random() * 80;
+  duck.style.left = left + "%";
+
+  // ランダム種類
+  const isBaby = Math.random() < 0.2;
+
+  let duration;
+  let animationText;
+
+  if (isBaby) {
+    duck.src = "hina.png";
+    duck.style.width = "140px"; // 小さく
+    duration = 2;
+    animationText = `flow ${duration}s linear 1, wobble 0.1s ease-in-out infinite`;
+
+
+  } else {
+    duck.src = "duck2.png";
+    duck.style.width = "280px"; // 普通サイズ
+    duration = 12;
+
+    animationText = `flow ${duration}s linear 1`;
+  }
+
+  // アニメーション完全リセット
+  duck.style.animation = "none";
+  duck.offsetHeight; // ←これ超重要
+
+// durationも含めて再設定
+  duck.style.animation = animationText;
+
+  duck.addEventListener("animationend",(e)=>{
+  if(e.animationName==="flow"){  
+startFlow();
+}
+});
+}
+
+// 開始
+startFlow();
 
 window.onload = function(){
-  randomizeDuck();
+  startFlow();
 };
+
+
 
   </script>
 
