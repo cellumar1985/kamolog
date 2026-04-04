@@ -454,21 +454,21 @@ function startFlow() {
   duck.style.left = left + "%";
 
   // ランダム種類
-  const isBaby = Math.random() < 0.2;
+  const isBaby = Math.random() < 0.5;
 
   let duration;
   let animationText;
 
   if (isBaby) {
     duck.src = "hina.png";
-    duck.style.width = "140px"; // 小さく
+    duck.style.width = "110px"; // 小さく
     duration = 2;
     animationText = `flow ${duration}s linear 1, wobble 0.1s ease-in-out infinite`;
 
 
   } else {
     duck.src = "duck2.png";
-    duck.style.width = "280px"; // 普通サイズ
+    duck.style.width = "230px"; // 普通サイズ
     duration = 12;
 
     animationText = `flow ${duration}s linear 1`;
@@ -480,13 +480,15 @@ function startFlow() {
 
 // durationも含めて再設定
   duck.style.animation = animationText;
+}
+
 
   duck.addEventListener("animationend",(e)=>{
   if(e.animationName==="flow"){  
 startFlow();
 }
 });
-}
+
 
 // 開始
 startFlow();
