@@ -73,6 +73,7 @@ input, textarea {
   pointer-events: none;
   z-index: 1;
   animation: flow 25s linear infinite;
+transform: translateY(-120px);
 }
 
 
@@ -82,8 +83,10 @@ input, textarea {
 }
  
 @keyframes flow {
-  0%   { top: -120px; }
-  100% { top: 110vh; }
+  0%   { transform:
+translateY(-120px); }
+  100% { transform:
+translateY(110vh); }
 }
 
 
@@ -498,20 +501,28 @@ function startFlow() {
   duck.style.animation = animationText;
 }
 
+let waiting = false;
 
   duck.addEventListener("animationend",(e)=>{
-  if(e.animationName==="flow"){  
-startFlow();
-}
+  if(e.animationName !== "flow")return; 
+
+
+if(waiting) return;
+
+waiting = true;
+
+const delay = Math.random() * 6000 + 3000;
+
+ setTimeout(() => {
+waiting = false;
+      startFlow();
+    }, delay);
 });
 
 
 // 開始
 startFlow();
 
-window.onload = function(){
-  startFlow();
-};
 
 
 
