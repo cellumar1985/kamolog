@@ -197,7 +197,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 let currentPhoto = null;
-
+let currentOriginal = null;
 
 let allData = [];
 let editId = null;
@@ -222,33 +222,49 @@ const date = document.getElementById("date").value;
       }
 
       if (file) {
-        compressImage(file, function(base64) {
-          saveToFirestore(kamo, place, memo, date, base64);
-        });
-      } else {
-        saveToFirestore(kamo, place, memo, date, currentPhoto);
-      }
-    }
+        const reader = new FileReader();
+      
+       reader.onload = function(e){
+        const original = e.target.result;
 
-    function saveToFirestore(kamo, place, memo, date, photo){
+compressImage(file, function(compressed) {
+          saveToFirestore(kamo, place, memo, date, compressed, original);
+        });
+        };
+
+    reader.readAsDataURL(file);
+
+      } else {
+        saveToFirestore(kamo, place, memo, date, currentPhoto, currentOriginal);
+      }
+
+}
+
+
+
+    
+
+    function saveToFirestore(kamo, place, memo, date, photo, original){
 
   if(editId){
 
     let updateData = { kamo, place, memo, date };
 
-    if(photo){
-      updateData.photo = photo;
-    }
+    if(photo)updateData.photo = photo;
+
+    if(original)updateData.original = original;
+    
 
     db.collection("kamolog").doc(editId).update(updateData);
 
     editId = null;
     currentPhoto = null;
+    currentOriginal = null;
 
   }else{
 
     db.collection("kamolog").add({
-      kamo, place, memo, date, photo,
+      kamo, place, memo, date, photo, original,
       created: Date.now()
     });
 
@@ -305,11 +321,6 @@ function updateFilterOptions(){
 }
 
 
-const img1 = new Image();
-img1.src = "duck2.png";
-const img2 = new Image();
-img2.src = "hina.png";
-
 
 function applyFilter(){
 
@@ -353,11 +364,22 @@ function render(data){
       <p>📅 ${d.date||""}</p>
       <p>🦆 ${d.kamo} / 📍 ${d.place}</p>
       <p>${(d.memo||"").replace(/\n/g,"<br>")}</p>
-       ${d.photo ? `<img src="${d.photo}">` : ""}
+      
       <button onclick="editRecord('${d.id}')">編集</button>
       <button onclick="deleteRecord('${d.id}')">削除</button>
     `;
 
+if(d.photo){
+const img = document.createElement("img");
+img.src = d.photo;
+
+img.onclick = function(){
+openImage(d.original ||
+d.photo);
+};
+
+div.appendChild(img);
+}
     list.appendChild(div);
   });
 }
@@ -379,6 +401,7 @@ function render(data){
   document.getElementById("date").value = data.date||"";
 
   currentPhoto = data.photo || null;
+  currentOriginal = data.original || null;
 
 const preview = document.getElementById("preview");
 
@@ -463,6 +486,12 @@ function previewImage() {
   }
 }
 
+
+function openImage(src){
+const w = window.open();
+w.document.write(`<img src="${src}"
+style="width:100%">`);
+}
 
 
 const duck = document.getElementById("duck2");
