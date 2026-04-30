@@ -207,6 +207,8 @@ onclick="closeImage()">
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
 
   <script>
     const firebaseConfig = {
@@ -221,6 +223,7 @@ onclick="closeImage()">
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const storage = firebase.storage();
 
 let currentPhoto = null;
 let currentOriginal = null;
@@ -230,15 +233,13 @@ let editId = null;
 
 
     function saveRecord() {
-      const kamoInput = document.getElementById("kamo");
-      const placeInput = document.getElementById("place");
-      const photoInput = document.getElementById("photo");
+     
 
-const kamo = kamoInput.value;
-const place = placeInput.value;
+const kamo = document.getElementById("kamo").value;
+const place = document.getElementById("place").value;
 const memo = document.getElementById("memo").value || "";
 const date = document.getElementById("date").value;
-     const file = photoInput.files[0];
+const file = document.getElementById("photo").files[0];
 
       
 
@@ -248,20 +249,18 @@ const date = document.getElementById("date").value;
       }
 
       if (file) {
-        const reader = new FileReader();
+        const fileName = Date.now() + "_" + file.name;
+        const ref = storage.ref().child("images/" +fileName);
+
+       ref.put(file).then(snapshot => {
+       snapshot.ref.getDownloadURL().then(url=>{
       
-       reader.onload = function(e){
-        const original = e.target.result;
-
-compressImage(file, function(compressed) {
-          saveToFirestore(kamo, place, memo, date, compressed, original);
-        });
-        };
-
-    reader.readAsDataURL(file);
-
+saveToFirestore(kamo, place, memo, date, url);
+      });
+});
+      
       } else {
-        saveToFirestore(kamo, place, memo, date, currentPhoto, currentOriginal);
+        saveToFirestore(kamo, place, memo, date, currentPhoto);
       }
 
 }
@@ -270,27 +269,20 @@ compressImage(file, function(compressed) {
 
     
 
-    function saveToFirestore(kamo, place, memo, date, photo, original){
+    function saveToFirestore(kamo, place, memo, date, photoUrl){
 
   if(editId){
 
-    let updateData = { kamo, place, memo, date };
-
-    if(photo)updateData.photo = photo;
-
-    if(original)updateData.original = original;
-    
-
-    db.collection("kamolog").doc(editId).update(updateData);
+   
+    db.collection("kamolog").doc(editId).update({kamo, place, memo, date, photo: photoUrl});
 
     editId = null;
-    currentPhoto = null;
-    currentOriginal = null;
+   
 
   }else{
 
     db.collection("kamolog").add({
-      kamo, place, memo, date, photo, original,
+      kamo, place, memo, date, photo: photoUrl,
       created: Date.now()
     });
 
@@ -298,6 +290,9 @@ compressImage(file, function(compressed) {
 
   clearForm();
 }
+
+
+let initialized = false;
 
  db.collection("kamolog").onSnapshot(snapshot => {
 
@@ -310,7 +305,11 @@ compressImage(file, function(compressed) {
     });
   });
 
+
+if(!initialized){
   updateFilterOptions();
+initialized = true;
+}
   applyFilter();
 });
 
@@ -400,8 +399,7 @@ const img = document.createElement("img");
 img.src = d.photo;
 
 img.onclick = function(){
-openImage(d.original ||
-d.photo);
+openImage(d.photo);
 };
 
 div.appendChild(img);
@@ -501,7 +499,17 @@ function previewImage() {
   const preview = document.getElementById("preview");
 
   if (file) {
-    const reader = new FileReader();
+    const storageRef = storage.ref("images/" + Date.now() + "_" + file.name);
+storageRef.put(file).then(snapshot=>{
+snapshot.ref.getDownloadURL().then(url=>{
+      
+saveToFirestore(kamo, place, memo, date, url, url);
+      });
+});
+      
+      } else {
+
+
 
     reader.onload = function(e) {
       preview.src = e.target.result;
