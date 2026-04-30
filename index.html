@@ -499,18 +499,7 @@ function previewImage() {
   const preview = document.getElementById("preview");
 
   if (file) {
-    const storageRef = storage.ref("images/" + Date.now() + "_" + file.name);
-storageRef.put(file).then(snapshot=>{
-snapshot.ref.getDownloadURL().then(url=>{
-      
-saveToFirestore(kamo, place, memo, date, url, url);
-      });
-});
-      
-      } else {
-
-
-
+     const reader = new FileReader();
     reader.onload = function(e) {
       preview.src = e.target.result;
       preview.style.display = "block";
