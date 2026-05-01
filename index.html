@@ -249,18 +249,31 @@ const file = document.getElementById("photo").files[0];
       }
 
       if (file) {
-        const fileName = Date.now() + "_" + file.name;
-        const ref = storage.ref().child("images/" +fileName);
+        const originalName = "original_" + Date.now() + "_" + file.name;
+        const originalRef = storage.ref().child("images/" + originalName);
 
-       ref.put(file).then(snapshot => {
-       snapshot.ref.getDownloadURL().then(url=>{
+       originalRef.put(file).then(snapshot => {
+       snapshot.ref.getDownloadURL().then(originalUrl =>{
       
-saveToFirestore(kamo, place, memo, date, url);
+compressImage(file,function(compressedData){
+
+const thumbName = "thumb_" + Date.now() + "_" + file.name;
+const thumbRef = storage.ref().child("images/" + thumbName);
+
+thumbRef.putString(compressedData,"data_url").then(thumbSnapshot => {
+
+thumbSnapshot.ref.getDownloadURL().then(thumbUrl =>{
+
+
+saveToFirestore(kamo, place, memo, date, thumbUrl, originalUrl);
       });
+});
+});
+});
 });
       
       } else {
-        saveToFirestore(kamo, place, memo, date, currentPhoto);
+        saveToFirestore(kamo, place, memo, date, currentPhoto, currentOriginal);
       }
 
 }
@@ -269,12 +282,12 @@ saveToFirestore(kamo, place, memo, date, url);
 
     
 
-    function saveToFirestore(kamo, place, memo, date, photoUrl){
+    function saveToFirestore(kamo, place, memo, date, photoUrl, originalUrl){
 
   if(editId){
 
    
-    db.collection("kamolog").doc(editId).update({kamo, place, memo, date, photo: photoUrl});
+    db.collection("kamolog").doc(editId).update({kamo, place, memo, date, photo: photoUrl, original: originalUrl});
 
     editId = null;
    
@@ -282,7 +295,7 @@ saveToFirestore(kamo, place, memo, date, url);
   }else{
 
     db.collection("kamolog").add({
-      kamo, place, memo, date, photo: photoUrl,
+      kamo, place, memo, date, photo: photoUrl, original: originalUrl, 
       created: Date.now()
     });
 
@@ -399,7 +412,7 @@ const img = document.createElement("img");
 img.src = d.photo;
 
 img.onclick = function(){
-openImage(d.photo);
+openImage(d.original || d.photo);
 };
 
 div.appendChild(img);
