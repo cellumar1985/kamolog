@@ -92,6 +92,7 @@ justify-content: center;
 align-items: center;
 z-index: 9999;
 }
+
 #fullscreenImage img{
 max-width: 100%;
 max-height: 100%;
@@ -136,6 +137,24 @@ h1{
   
 }
 
+#loadingPopup{
+position: fixed;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+
+background: white;
+color: black;
+padding: 20px 30px;
+border-radius: 15px;
+font-size: 20px;
+z-index: 9999;
+display: none;
+box-shadow: 0 0 15px rgba(0,0,0,0.3);
+}
+
+
+
 
  </style>
 </head>
@@ -171,7 +190,8 @@ h1{
 
 <img id="preview" style="max-width:100%; display:none; margin-top:10px;">
 
-  <button onclick="saveRecord()">保存</button>
+  <button id="saveBtn"onclick="saveRecord()">保存</button>
+<p id="loadingText"></p>
 
   <hr>
 
@@ -198,7 +218,9 @@ onclick="closeImage()">
 
 </div>
 
-
+<div id="loadingPopup">
+保存中...🐣
+</div>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -229,7 +251,9 @@ let editId = null;
 
 
     function saveRecord() {
-     
+const popup = document.getElementById("loadingPopup");   
+popup.textContent = "保存中...🐣"
+popup.style.display = "block";
 
 const kamo = document.getElementById("kamo").value;
 const place = document.getElementById("place").value;
@@ -298,7 +322,14 @@ saveToFirestore(kamo, place, memo, date, thumbUrl, originalUrl);
   }
 
   clearForm();
+
+
+const popup = document.getElementById("loadingPopup");
+popup .textContent = "保存完了!🐥";
+setTimeout(() =>{popup.style.display = "none";}, 1000);
+
 }
+
 
 
 let initialized = false;
